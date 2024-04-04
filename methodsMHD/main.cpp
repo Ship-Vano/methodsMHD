@@ -29,7 +29,7 @@ void brioWu_init(const double& h, std::vector<std::vector<double>>& state)
 	double x_i = 0.;
 	for (int i = 0; i < num_space_steps; ++i)
 	{
-		if (x_i <= 0.5) {
+		if (x_i < 0.5) {
 			state[i] = state_from_primitive_vars(rhoL, uL, vL, wL, pL, BxL, ByL, BzL);
 		}
 		else {
@@ -81,21 +81,6 @@ int main()
 	//Brio-Wu initializer
 	brioWu_init(h, state_j);
 
-	//System evolution
-	for (int j = 0; j < num_time_steps-1; ++j) {
-		for (int i = 1; i < num_space_steps-1; ++i) {
-			fluxes[i-1] = HLL_flux(state_j[i - 1], state_j[i]);
-			//std::cout << i << std::endl;
-		}
-		state_jpp[0] = left_bound();
-		state_jpp[num_space_steps - 1] = right_bound();
-		for (int i = 1; i < num_space_steps-1; ++i) {
-			state_jpp[i] = state_j[i] - tau / h * (fluxes[i] - fluxes[i-1]);
-		}
-		state_j = state_jpp;
-	}
-	//out(fluxes[0]);
-	//for(int k = 0; k < num_space_steps; ++k)
-		//out(state_jpp[k]);
+    // Output results or perform other tasks
 	return 0;
 }

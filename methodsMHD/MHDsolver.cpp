@@ -154,25 +154,22 @@ std::vector<double> HLL_flux(const std::vector<double>& U_L, const std::vector<d
     double cfL = cfast(U_L);
     double cfR = cfast(U_R);
     //скорость левого сигнала, рассчитываемая как минимальное значение скорости левого состояния (uL) и быстрой магнитозвуковой скорости (cfL). 
-    double SL = std::min(uL, uR) - std::max(cfL, cfR);
+   // double SL = std::min(uL, uR) - std::max(cfL, cfR);
     // Скорость правого сигнала, рассчитываемая как максимальное значение скорости правильного состояния (uR) и быстрой магнитозвуковой скорости (cfR).ы
     double SR = std::max(uL, uR) + std::max(cfL, cfR);
-    //double SL = -SR;
+    double SL = -SR;
     // TODO: SL = - SR
-    
-    if (U_L[0] > 1 or U_R[0] > 1) {
-        out(U_L);
-        std::cout << "SL = " << SL << std::endl;
-    }
-    if (SL <= 0 && SR >= 0) {
-        return 1 / (SR - SL) * (SR * MHD_flux(U_L) - SL * MHD_flux(U_R) + SL * SR * (U_R - U_L));
-    }
-    else if (SL >= 0) {
+    out(U_L);
+    std::cout << "SL = " << SL << std::endl;
+    if (SL >= 0) {
         return MHD_flux(U_L);
     }
-    //if (SR >= 0)
-    else  {
+    else if (SR >= 0) {
         return MHD_flux(U_R);
+    }
+    //(SL <= 0 && SR >= 0)
+    else{
+        return 1 / (SR - SL) * (SR * MHD_flux(U_L) - SL*MHD_flux(U_R) + SL*SR*(U_R-U_L));
     }
 
 }
