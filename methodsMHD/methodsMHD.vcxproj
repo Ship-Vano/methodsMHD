@@ -133,8 +133,8 @@
     <ClCompile Include="MHDsolver.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\Downloads\LinOp.h" />
     <ClInclude Include="FileIO.h" />
+    <ClInclude Include="LinOp.h" />
     <ClInclude Include="MHDsolver.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
