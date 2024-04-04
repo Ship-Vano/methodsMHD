@@ -1,10 +1,8 @@
 #include"MHDsolver.h"
-#include<cmath>
-#include<vector>
-#include"LinOp.h"
 
-const double dp = 0.0;
-const double gam = 5.0 / 3.0; //?
+
+//const double gam = 5.0 / 3.0; //?
+const double gam = 2.0;
 
 //Параметры из вектора состояния
 std::vector<double> primitive_vars_from_state(const std::vector<double>& U) {
@@ -124,6 +122,55 @@ std::vector<double> MHD_flux(const std::vector<double>& U) {
     F[7] = Bz * vx - Bx * vz;
 
     return F;
+}
+
+// Определяем HLL поток F
+std::vector<double> HLL_flux(const std::vector<double>& U_L, const std::vector<double>& U_R) {
+    // переменные левого и правого края
+     // 0    1  2  3  4   5  6   7
+    //(rho, u, v, w, p, Bx, By, Bz) 
+    // *******************************;
+    std::vector<double> componentsL = primitive_vars_from_state(U_L);
+    double rhoL = componentsL[0];
+    double uL = componentsL[1];
+    double vL = componentsL[2];
+    double wL = componentsL[3];
+    double pL = componentsL[4];
+    double BxL = componentsL[5];
+    double ByL = componentsL[6];
+    double BzL = componentsL[7];
+    std::vector<double> componentsR = primitive_vars_from_state(U_R);
+    double rhoR = componentsR[0];
+    double uR = componentsR[1];
+    double vR = componentsR[2];
+    double wR = componentsR[3];
+    double pR = componentsR[4];
+    double BxR = componentsR[5];
+    double ByR = componentsR[6];
+    double BzR = componentsR[7];
+
+    //быстрые магнитозвуковые скорости на левом и правом концах
+    double cfL = cfast(U_L);
+    double cfR = cfast(U_R);
+    //скорость левого сигнала, рассчитываемая как минимальное значение скорости левого состояния (uL) и быстрой магнитозвуковой скорости (cfL). 
+   // double SL = std::min(uL, uR) - std::max(cfL, cfR);
+    // Скорость правого сигнала, рассчитываемая как максимальное значение скорости правильного состояния (uR) и быстрой магнитозвуковой скорости (cfR).ы
+    double SR = std::max(uL, uR) + std::max(cfL, cfR);
+    double SL = -SR;
+    // TODO: SL = - SR
+    out(U_L);
+    std::cout << "SL = " << SL << std::endl;
+    if (SL >= 0) {
+        return MHD_flux(U_L);
+    }
+    else if (SR >= 0) {
+        return MHD_flux(U_R);
+    }
+    //(SL <= 0 && SR >= 0)
+    else{
+        return 1 / (SR - SL) * (SR * MHD_flux(U_L) - SL*MHD_flux(U_R) + SL*SR*(U_R-U_L));
+    }
+
 }
 
 //Определяем HLLD поток F*
@@ -264,6 +311,45 @@ std::vector<double> HLLD_flux(const std::vector<double>& U_L, const std::vector<
     }
     return F_HLLD;
 }
+
+//bool HLLDSolve()
+//{
+//    string filename = "init1";
+//	string path = "OutputData\\" + filename;
+//	ofstream fpoints(path);
+//	cout << "log[INFO]: Starting HLLD solve..." << endl;
+//	cout << "log[INFO]: Opening a file \"" << filename << "\" to write..." << endl;
+//	//initial values
+//    double t_0 = 0.;
+//    vector<double> u_0{ 1.,2.,3.,4.,6.,7.,8.};
+//    //
+//    if (fpoints.is_open())
+//	{
+//        double t_i = t_0;
+//		//vector<double> y_i = u_0;
+//		///*fpoints << t_i << endl;
+//		//writeVectorToFile(fpoints, y_i);*/
+//		//int ind = 0;
+//  //      vector<double> y_ipp = u_0;
+//		//writeVectorToFile(fpoints, t_i, y_i);
+//		//while (abs(T - t_i) >= 1e-8)
+//		//{
+//		//	y_ipp = y_i + tau * func(t_i, y_i);
+//		//	//fpoints << t_i << endl;
+//		//	y_i = y_ipp;
+//		//	t_i += tau;
+//		//	writeVectorToFile(fpoints, t_i, y_i);
+//		//}
+//		fpoints.close();
+//		return true;
+//	}
+//	else
+//		cout << "log[ERROR]: Couldn't open or create a file" << endl;
+//	return false;
+//}
+
+
+
 // #include <iostream>
 //#include <vector>
 //#include <cmath>
