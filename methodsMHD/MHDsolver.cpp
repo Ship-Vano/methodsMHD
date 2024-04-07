@@ -3,6 +3,7 @@
 
 //const double gam = 5.0 / 3.0; //?
 const double gam = 2.0;
+const double PI = 3.141592653589793;
 
 //Параметры из вектора состояния
 std::vector<double> primitive_vars_from_state(const std::vector<double>& U) {
@@ -77,7 +78,8 @@ double cfast(const std::vector<double>& U) {
     double vv = components[1] * components[1] + components[2] * components[2] + components[3] * components[3];
     //p
     double p = components[4];
-    return std::sqrt((gam * p + BB + std::sqrt((gam * p + BB) * (gam * p + BB) - 4 * gam * p * Bx * Bx)) / (2 * rho));
+    double cfast = std::sqrt((gam * p + BB + std::sqrt((gam * p + BB) * (gam * p + BB) - 4 * gam * p * Bx * Bx)) / (2 * rho));
+    return cfast;
 }
 
 //определяем полное давление
@@ -109,15 +111,15 @@ std::vector<double> MHD_flux(const std::vector<double>& U) {
     double Bz = components[7];
 
     double BB = Bx * Bx + By * By + Bz * Bz;
-   // double pT = p + BB / 2;
-    double pT = ptotal(U);
+    double pT = p + BB / 2;
+    //double pT = ptotal(U);
 
     std::vector<double> F(8, 0);
     F[0] = rho * vx;
-    F[1] = rho * vx * vx + pT - Bx * Bx;
-    F[2] = rho * vy * vx - Bx * By;
-    F[3] = rho * vz * vx - Bx * Bz;
-    F[4] = (totalenergy(U) + pT) * vx - Bx * (vx * Bx + vy * By + vz * Bz);
+    F[1] = rho * vx * vx + pT - Bx * Bx / (4*PI);
+    F[2] = rho * vy * vx - Bx * By / (4 * PI);
+    F[3] = rho * vz * vx - Bx * Bz / (4 * PI);
+    F[4] = (totalenergy(U) + pT) * vx - Bx * (vx * Bx + vy * By + vz * Bz) / (4 * PI);
     F[5] = 0;
     F[6] = By * vx - Bx * vy;
     F[7] = Bz * vx - Bx * vz;
@@ -159,12 +161,12 @@ std::vector<double> HLL_flux(const std::vector<double>& U_L, const std::vector<d
     double SR = std::max(uL, uR) + std::max(cfL, cfR);
     //double SL = -SR;
     // TODO: SL = - SR
-    
-    if (U_L[0] > 1 or U_R[0] > 1) {
-        out(U_L);
-        std::cout << "SL = " << SL << std::endl;
-    }
-    if (SL <= 0 && SR >= 0) {
+    /*std::cout << "UL = " << std::endl;
+    out(U_L);
+    std::cout << "UR = " << std::endl;
+    out(U_R);
+    std::cout << "cfL: " << cfL << "; cfR:" << cfR << std::endl;*/
+    if (SL < 0 && SR > 0) {
         return 1 / (SR - SL) * (SR * MHD_flux(U_L) - SL * MHD_flux(U_R) + SL * SR * (U_R - U_L));
     }
     else if (SL >= 0) {
