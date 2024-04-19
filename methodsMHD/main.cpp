@@ -109,7 +109,7 @@ int main()
 			for (int i = 1; i < num_space_steps; ++i) {
 				//TODO: внести flux'ы в отдельный вектор и вычислять заранее
 				//state_jpp[i] = state_j[i] - tau / h * (fluxes[i] - fluxes[i - 1]);
-				state_jpp[i] = state_j[i] - tau / h * (HLL_flux(state_j[i],state_j[i+1])-HLL_flux(state_j[i-1],state_j[i]));
+				state_jpp[i] = state_j[i] - tau / h * (HLLD_flux(state_j[i],state_j[i+1])-HLLD_flux(state_j[i-1],state_j[i]));
 			}
 			state_jpp[0] = left_bound();
 			state_jpp[num_space_steps] = right_bound();

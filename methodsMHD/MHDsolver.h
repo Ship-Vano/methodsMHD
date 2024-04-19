@@ -13,3 +13,5 @@ double cfast(const std::vector<double>& U);
 std::vector<double> MHD_flux(const std::vector<double>& U);
 
 std::vector<double> HLL_flux(const std::vector<double>& U_L, const std::vector<double>& U_R);
+
+std::vector<double> HLLD_flux(const std::vector<double>& U_L, const std::vector<double>& U_R);
